@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayQR - Paiement Universel</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#2D7FF9',secondary:'#34C759'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+.font-poppins { font-family: 'Poppins', sans-serif; }
+.font-inter { font-family: 'Inter', sans-serif; }
+.balance-card {
+background: linear-gradient(135deg, #2D7FF9 0%, #4A90FF 100%);
+}
+.transaction-item {
+transition: all 0.3s ease;
+}
+.transaction-item:hover {
+background-color: #f8fafc;
+}
+@keyframes scan {
+0% { transform: translateY(-100%); }
+100% { transform: translateY(100%); }
+}
+.animate-scan {
+animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.success-animation {
+animation: success-bounce 0.6s ease-out;
+}
+@keyframes success-bounce {
+0% { transform: scale(0.3); opacity: 0; }
+50% { transform: scale(1.1); }
+100% { transform: scale(1); opacity: 1; }
+}
+</style>
+</head>
+<body class="bg-white font-inter">
+<!-- Navigation Bar -->
+<nav class="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 z-50">
+<div class="flex items-center justify-between px-6 py-4">
+<div class="font-['Pacifico'] text-xl text-primary">PayQR</div>
+<div class="w-8 h-8 flex items-center justify-center">
+<div class="w-8 h-8 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center">
+<span class="text-white text-sm font-medium">JD</span>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="pt-20 pb-24">
+<!-- Home Screen -->
+<section id="home-screen" class="px-6">
+<!-- Balance Card -->
+<div class="balance-card rounded-2xl p-6 mb-6 text-white">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-white/80 text-sm font-inter">Solde disponible</p>
+<h2 class="text-3xl font-poppins font-bold">2 847,50 FCFA</h2>
+</div>
+<div class="w-6 h-6 flex items-center justify-center">
+<i class="ri-eye-line text-white/80"></i>
+</div>
+</div>
+<div class="flex items-center">
+<div class="w-4 h-4 flex items-center justify-center mr-2">
+<i class="ri-arrow-up-line text-secondary"></i>
+</div>
+<span class="text-secondary text-sm font-medium">+12,5%</span>
+<span class="text-white/60 text-sm ml-2">ce mois</span>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="grid grid-cols-3 gap-4 mb-8">
+<button class="action-btn bg-white border border-gray-200 rounded-xl p-4 flex flex-col items-center cursor-pointer !rounded-button" onclick="showScanScreen()">
+<div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-xl mb-3">
+<i class="ri-qr-scan-line text-primary text-xl"></i>
+</div>
+<span class="text-gray-900 font-medium text-sm">Payer</span>
+</button>
+<button class="action-btn bg-white border border-gray-200 rounded-xl p-4 flex flex-col items-center cursor-pointer !rounded-button" onclick="showReceiveScreen()">
+<div class="w-12 h-12 flex items-center justify-center bg-secondary/10 rounded-xl mb-3">
+<i class="ri-qr-code-line text-secondary text-xl"></i>
+</div>
+<span class="text-gray-900 font-medium text-sm">Recevoir</span>
+</button>
+<a href="https://readdy.ai/home/52434653-3a95-4ad4-aae6-9d7ecb76779b/6fd38c65-f1b1-40f3-878d-181568dc7baa" data-readdy="true" class="action-btn bg-white border border-gray-200 rounded-xl p-4 flex flex-col items-center cursor-pointer !rounded-button no-underline">
+<div class="w-12 h-12 flex items-center justify-center bg-orange-100 rounded-xl mb-3">
+<i class="ri-add-line text-orange-600 text-xl"></i>
+</div>
+<span class="text-gray-900 font-medium text-sm">Recharger</span>
+</a>
+</div>
+<!-- Recent Transactions -->
+<div class="bg-white rounded-xl border border-gray-200 p-6">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-poppins font-semibold text-gray-900">Transactions récentes</h3>
+<button class="text-primary text-sm font-medium cursor-pointer" onclick="showHistoryScreen()">Voir tout</button>
+</div>
+<div class="space-y-4">
+<div class="transaction-item flex items-center justify-between p-3 rounded-lg">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-red-100 rounded-full mr-3">
+<i class="ri-shopping-cart-line text-red-600"></i>
+</div>
+<div>
+<p class="font-medium text-gray-900 text-sm">Carrefour Market</p>
+<p class="text-gray-500 text-xs">Aujourd'hui, 14:32</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-semibold text-gray-900">-4 580 FCFA</p>
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-check-line text-secondary text-sm"></i>
+</div>
+</div>
+</div>
+<div class="transaction-item flex items-center justify-between p-3 rounded-lg">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-full mr-3">
+<i class="ri-user-line text-blue-600"></i>
+</div>
+<div>
+<p class="font-medium text-gray-900 text-sm">Marie Dubois</p>
+<p class="text-gray-500 text-xs">Hier, 19:45</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-semibold text-secondary">+2 500 FCFA</p>
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-check-line text-secondary text-sm"></i>
+</div>
+</div>
+</div>
+<div class="transaction-item flex items-center justify-between p-3 rounded-lg">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-full mr-3">
+<i class="ri-gas-station-line text-purple-600"></i>
+</div>
+<div>
+<p class="font-medium text-gray-900 text-sm">Station Total</p>
+<p class="text-gray-500 text-xs">Hier, 08:15</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-semibold text-gray-900">-6 720 FCFA</p>
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-check-line text-secondary text-sm"></i>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Scan Screen -->
+<section id="scan-screen" class="hidden">
+<div class="relative h-screen bg-black">
+<!-- Camera View -->
+<div class="absolute inset-0 flex items-center justify-center">
+<img src="https://readdy.ai/api/search-image?query=QR%20code%20scanner%20camera%20viewfinder%20interface%2C%20modern%20mobile%20app%20design%2C%20clean%20UI%20with%20scanning%20frame%2C%20dark%20background%2C%20professional%20tech%20aesthetic&width=375&height=600&seq=scan001&orientation=portrait" alt="Scanner" class="w-full h-full object-cover">
+</div>
+<!-- Scan Frame -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="bg-black/40 backdrop-blur-sm w-full h-full flex items-center justify-center">
+<div class="scan-frame w-56 h-56 relative bg-black/20 backdrop-blur-sm rounded-3xl overflow-hidden">
+<div class="absolute inset-2 border-2 border-white/30 rounded-2xl"></div>
+<div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary"></div>
+<div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary"></div>
+<div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary"></div>
+<div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-full h-0.5 bg-primary/30 animate-scan"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Top Bar -->
+<div class="absolute top-0 left-0 right-0 flex justify-between items-center p-6 bg-gradient-to-b from-black/50 to-transparent">
+<button class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full cursor-pointer" onclick="showHomeScreen()">
+<i class="ri-arrow-left-line text-white text-xl"></i>
+</button>
+<button class="w-10 h-10 flex items-center justify-center bg-white/20 rounded-full cursor-pointer">
+<i class="ri-flashlight-line text-white text-xl"></i>
+</button>
+</div>
+<!-- Bottom Controls -->
+<div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+<p class="text-white text-center mb-6 font-medium">Scannez le QR code pour payer</p>
+<button class="w-full bg-white/20 border border-white/30 rounded-xl py-4 text-white font-medium cursor-pointer !rounded-button" onclick="showPaymentModal()">
+Saisie manuelle
+</button>
+</div>
+</div>
+</section>
+<!-- Receive Screen -->
+<section id="receive-screen" class="hidden px-6">
+<div class="flex items-center justify-between mb-6">
+<button class="w-10 h-10 flex items-center justify-center cursor-pointer" onclick="showHomeScreen()">
+<i class="ri-arrow-left-line text-gray-900 text-xl"></i>
+</button>
+<h1 class="text-xl font-poppins font-semibold text-gray-900">Recevoir un paiement</h1>
+<div class="w-10"></div>
+</div>
+<!-- Amount Input -->
+<div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+<label class="block text-gray-700 font-medium mb-3">Montant à recevoir</label>
+<div class="relative">
+<input type="text" id="amount-input" class="w-full text-3xl font-poppins font-bold text-gray-900 border-none outline-none bg-transparent" placeholder="0,00" value="150,00">
+<span class="absolute right-0 top-1/2 transform -translate-y-1/2 text-2xl font-bold text-gray-400">FCFA</span>
+</div>
+</div>
+<!-- Generate QR Button -->
+<button class="w-full bg-primary text-white rounded-xl py-4 font-semibold text-lg mb-6 cursor-pointer !rounded-button" onclick="generateQRCode()">
+Générer le QR Code
+</button>
+<!-- QR Code Display -->
+<div id="qr-display" class="hidden bg-white rounded-xl border border-gray-200 p-6 text-center">
+<div class="w-48 h-48 mx-auto mb-4 bg-gray-100 rounded-lg flex items-center justify-center">
+<img src="https://readdy.ai/api/search-image?query=QR%20code%20payment%20request%2C%20black%20and%20white%20QR%20code%20pattern%2C%20clean%20white%20background%2C%20mobile%20payment%20interface&width=200&height=200&seq=qr001&orientation=squarish" alt="QR Code" class="w-full h-full object-contain rounded-lg">
+</div>
+<p class="text-gray-600 mb-4">Montant : <span class="font-semibold text-gray-900">15 000 FCFA</span></p>
+<div class="grid grid-cols-2 gap-3">
+<button class="bg-gray-100 text-gray-700 rounded-lg py-3 font-medium cursor-pointer !rounded-button">
+<div class="w-5 h-5 flex items-center justify-center mx-auto mb-1">
+<i class="ri-share-line"></i>
+</div>
+Partager
+</button>
+<button class="bg-gray-100 text-gray-700 rounded-lg py-3 font-medium cursor-pointer !rounded-button">
+<div class="w-5 h-5 flex items-center justify-center mx-auto mb-1">
+<i class="ri-download-line"></i>
+</div>
+Enregistrer
+</button>
+</div>
+</div>
+</section>
+<!-- History Screen -->
+<section id="history-screen" class="hidden px-6">
+<div class="flex items-center justify-between mb-6">
+<button class="w-10 h-10 flex items-center justify-center cursor-pointer" onclick="showHomeScreen()">
+<i class="ri-arrow-left-line text-gray-900 text-xl"></i>
+</button>
+<h1 class="text-xl font-poppins font-semibold text-gray-900">Historique</h1>
+<button class="w-10 h-10 flex items-center justify-center cursor-pointer">
+<i class="ri-filter-line text-gray-600 text-xl"></i>
+</button>
+</div>
+<!-- Filter Tabs -->
+<div class="bg-gray-100 rounded-lg p-1 mb-6 grid grid-cols-3">
+<button class="filter-tab active bg-white text-gray-900 rounded-md py-2 text-sm font-medium cursor-pointer">Aujourd'hui</button>
+<button class="filter-tab text-gray-600 py-2 text-sm font-medium cursor-pointer">Semaine</button>
+<button class="filter-tab text-gray-600 py-2 text-sm font-medium cursor-pointer">Mois</button>
+</div>
+<!-- Transactions List -->
+<div class="space-y-4">
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center">
+<div class="w-12 h-12 flex items-center justify-center bg-red-100 rounded-full mr-4">
+<i class="ri-shopping-cart-line text-red-600 text-lg"></i>
+</div>
+<div>
+<p class="font-semibold text-gray-900">Carrefour Market</p>
+<p class="text-gray-500 text-sm">Courses alimentaires</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-gray-900">-4 580 FCFA</p>
+<div class="flex items-center justify-end mt-1">
+<div class="w-4 h-4 flex items-center justify-center mr-1">
+<i class="ri-check-line text-secondary text-sm"></i>
+</div>
+<span class="text-secondary text-xs">Réussi</span>
+</div>
+</div>
+</div>
+<p class="text-gray-400 text-xs">Aujourd'hui, 14:32</p>
+</div>
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center">
+<div class="w-12 h-12 flex items-center justify-center bg-blue-100 rounded-full mr-4">
+<i class="ri-user-line text-blue-600 text-lg"></i>
+</div>
+<div>
+<p class="font-semibold text-gray-900">Marie Dubois</p>
+<p class="text-gray-500 text-sm">Remboursement restaurant</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-secondary">+2 500 FCFA</p>
+<div class="flex items-center justify-end mt-1">
+<div class="w-4 h-4 flex items-center justify-center mr-1">
+<i class="ri-check-line text-secondary text-sm"></i>
+</div>
+<span class="text-secondary text-xs">Reçu</span>
+</div>
+</div>
+</div>
+<p class="text-gray-400 text-xs">Hier, 19:45</p>
+</div>
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center">
+<div class="w-12 h-12 flex items-center justify-center bg-purple-100 rounded-full mr-4">
+<i class="ri-gas-station-line text-purple-600 text-lg"></i>
+</div>
+<div>
+<p class="font-semibold text-gray-900">Station Total</p>
+<p class="text-gray-500 text-sm">Carburant</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-gray-900">-6 720 FCFFA</p>
+<div class="flex items-center justify-end mt-1">
+<div class="w-4 h-4 flex items-center justify-center mr-1">
+<i class="ri-check-line text-secondary text-sm"></i>
+</div>
+<span class="text-secondary text-xs">Réussi</span>
+</div>
+</div>
+</div>
+<p class="text-gray-400 text-xs">Hier, 08:15</p>
+</div>
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center">
+<div class="w-12 h-12 flex items-center justify-center bg-orange-100 rounded-full mr-4">
+<i class="ri-restaurant-line text-orange-600 text-lg"></i>
+</div>
+<div>
+<p class="font-semibold text-gray-900">Boulangerie Paul</p>
+<p class="text-gray-500 text-sm">Petit-déjeuner</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-gray-900">-850 FCFA</p>
+<div class="flex items-center justify-end mt-1">
+<div class="w-4 h-4 flex items-center justify-center mr-1">
+<i class="ri-time-line text-orange-500 text-sm"></i>
+</div>
+<span class="text-orange-500 text-xs">En attente</span>
+</div>
+</div>
+</div>
+<p class="text-gray-400 text-xs">Il y a 2 jours, 07:30</p>
+</div>
+</div>
+</section>
+<!-- Profile Screen -->
+<section id="profile-screen" class="hidden px-6">
+<div class="flex items-center justify-between mb-6">
+<button class="w-10 h-10 flex items-center justify-center cursor-pointer" onclick="showHomeScreen()">
+<i class="ri-arrow-left-line text-gray-900 text-xl"></i>
+</button>
+<h1 class="text-xl font-poppins font-semibold text-gray-900">Profil</h1>
+<div class="w-10"></div>
+</div>
+<!-- Profile Header -->
+<div class="bg-white rounded-xl border border-gray-200 p-6 mb-6 text-center">
+<div class="w-20 h-20 bg-gradient-to-br from-primary to-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+<span class="text-white text-2xl font-bold">JD</span>
+</div>
+<h2 class="text-xl font-poppins font-semibold text-gray-900 mb-1">Jean Dupont</h2>
+<p class="text-gray-500">jean.dupont@email.com</p>
+</div>
+<!-- Profile Sections -->
+<div class="space-y-4">
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-full mr-4">
+<i class="ri-user-settings-line text-blue-600"></i>
+</div>
+<span class="font-medium text-gray-900">Informations personnelles</span>
+</div>
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-arrow-right-s-line text-gray-400"></i>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-green-100 rounded-full mr-4">
+<i class="ri-bank-card-line text-green-600"></i>
+</div>
+<span class="font-medium text-gray-900">Moyens de paiement</span>
+</div>
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-arrow-right-s-line text-gray-400"></i>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-red-100 rounded-full mr-4">
+<i class="ri-shield-check-line text-red-600"></i>
+</div>
+<span class="font-medium text-gray-900">Sécurité</span>
+</div>
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-arrow-right-s-line text-gray-400"></i>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-full mr-4">
+<i class="ri-notification-line text-purple-600"></i>
+</div>
+<span class="font-medium text-gray-900">Notifications</span>
+</div>
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-arrow-right-s-line text-gray-400"></i>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-orange-100 rounded-full mr-4">
+<i class="ri-customer-service-line text-orange-600"></i>
+</div>
+<span class="font-medium text-gray-900">Support client</span>
+</div>
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-arrow-right-s-line text-gray-400"></i>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Payment Modal -->
+<div id="payment-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end">
+<div class="bg-white rounded-t-3xl w-full p-6 transform translate-y-full transition-transform duration-300" id="payment-modal-content">
+<div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-6"></div>
+<div class="text-center mb-6">
+<h3 class="text-xl font-poppins font-semibold text-gray-900 mb-2">Confirmer le paiement</h3>
+<p class="text-gray-600">Restaurant Le Bistrot</p>
+</div>
+<div class="bg-gray-50 rounded-xl p-4 mb-6">
+<div class="text-center">
+<p class="text-gray-600 text-sm mb-1">Montant à payer</p>
+<p class="text-3xl font-poppins font-bold text-gray-900">4 250 FCFA</p>
+</div>
+</div>
+<div class="mb-6">
+<p class="text-gray-700 font-medium mb-3">Mode de paiement</p>
+<div class="space-y-3">
+<div class="payment-method bg-primary/5 border-2 border-primary rounded-lg p-4 flex items-center cursor-pointer">
+<div class="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-full mr-3">
+<i class="ri-wallet-line text-primary"></i>
+</div>
+<div class="flex-1">
+<p class="font-medium text-gray-900">Portefeuille PayQR</p>
+<p class="text-sm text-gray-500">Solde : 2 847,50 FCFA</p>
+</div>
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-check-line text-primary"></i>
+</div>
+</div>
+<div class="payment-method bg-white border border-gray-200 rounded-lg p-4 flex items-center cursor-pointer">
+<div class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-full mr-3">
+<i class="ri-bank-card-line text-blue-600"></i>
+</div>
+<div class="flex-1">
+<p class="font-medium text-gray-900">Carte bancaire</p>
+<p class="text-sm text-gray-500">•••• 4532</p>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="bg-gray-100 text-gray-700 rounded-xl py-4 font-semibold cursor-pointer !rounded-button" onclick="closePaymentModal()">
+Annuler
+</button>
+<button class="bg-primary text-white rounded-xl py-4 font-semibold cursor-pointer !rounded-button" onclick="confirmPayment()">
+Payer
+</button>
+</div>
+</div>
+</div>
+<!-- Success Modal -->
+<div id="success-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+<div class="bg-white rounded-3xl p-8 mx-6 text-center max-w-sm w-full">
+<div class="w-20 h-20 bg-secondary/10 rounded-full mx-auto mb-6 flex items-center justify-center success-animation">
+<i class="ri-check-line text-secondary text-3xl"></i>
+</div>
+<h3 class="text-xl font-poppins font-semibold text-gray-900 mb-2">Paiement réussi !</h3>
+<p class="text-gray-600 mb-6">Votre transaction a été effectuée avec succès</p>
+<button class="w-full bg-primary text-white rounded-xl py-4 font-semibold cursor-pointer !rounded-button" onclick="closeSuccessModal()">
+Continuer
+</button>
+</div>
+</div>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 z-40">
+<div class="grid grid-cols-4 h-20">
+<button class="tab-btn flex flex-col items-center justify-center cursor-pointer" onclick="showHomeScreen()" data-screen="home">
+<div class="w-6 h-6 flex items-center justify-center mb-1">
+<i class="ri-home-line text-primary"></i>
+</div>
+<span class="text-xs text-primary font-medium">Accueil</span>
+</button>
+<button class="tab-btn flex flex-col items-center justify-center cursor-pointer" onclick="showScanScreen()" data-screen="scan">
+<div class="w-6 h-6 flex items-center justify-center mb-1">
+<i class="ri-qr-scan-line text-gray-400"></i>
+</div>
+<span class="text-xs text-gray-400">Scanner</span>
+</button>
+<button class="tab-btn flex flex-col items-center justify-center cursor-pointer" onclick="showHistoryScreen()" data-screen="history">
+<div class="w-6 h-6 flex items-center justify-center mb-1">
+<i class="ri-history-line text-gray-400"></i>
+</div>
+<span class="text-xs text-gray-400">Historique</span>
+</button>
+<button class="tab-btn flex flex-col items-center justify-center cursor-pointer" onclick="showProfileScreen()" data-screen="profile">
+<div class="w-6 h-6 flex items-center justify-center mb-1">
+<i class="ri-user-line text-gray-400"></i>
+</div>
+<span class="text-xs text-gray-400">Profil</span>
+</button>
+</div>
+</nav>
+<script id="navigation-controller">
+document.addEventListener('DOMContentLoaded', function() {
+function showScreen(screenId) {
+if (!screenId) return;
+const screens = ['home-screen', 'scan-screen', 'receive-screen', 'history-screen', 'profile-screen'];
+screens.forEach(id => {
+const screen = document.getElementById(id);
+if (screen) {
+screen.classList.add('hidden');
+}
+});
+const targetScreen = document.getElementById(screenId);
+if (targetScreen) {
+targetScreen.classList.remove('hidden');
+updateTabNavigation(screenId.replace('-screen', ''));
+}
+}
+function updateTabNavigation(activeTab) {
+if (!activeTab) return;
+const tabs = document.querySelectorAll('.tab-btn');
+tabs.forEach(tab => {
+const icon = tab.querySelector('i');
+const text = tab.querySelector('span');
+if (!icon || !text) return;
+const screen = tab.getAttribute('data-screen');
+if (screen === activeTab) {
+icon.className = icon.className.replace('text-gray-400', 'text-primary');
+text.className = text.className.replace('text-gray-400', 'text-primary');
+} else {
+icon.className = icon.className.replace('text-primary', 'text-gray-400');
+text.className = text.className.replace('text-primary', 'text-gray-400');
+}
+});
+}
+window.showScreen = showScreen;
+window.showHomeScreen = () => showScreen('home-screen');
+window.showScanScreen = () => showScreen('scan-screen');
+window.showReceiveScreen = () => showScreen('receive-screen');
+window.showHistoryScreen = () => showScreen('history-screen');
+window.showProfileScreen = () => showScreen('profile-screen');
+});
+</script>
+<script id="payment-controller">
+document.addEventListener('DOMContentLoaded', function() {
+window.showPaymentModal = function() {
+const modal = document.getElementById('payment-modal');
+const content = document.getElementById('payment-modal-content');
+if (!modal || !content) return;
+modal.classList.remove('hidden');
+requestAnimationFrame(() => {
+content.style.transform = 'translateY(0)';
+});
+};
+window.closePaymentModal = function() {
+const modal = document.getElementById('payment-modal');
+const content = document.getElementById('payment-modal-content');
+if (!modal || !content) return;
+content.style.transform = 'translateY(100%)';
+setTimeout(() => {
+modal.classList.add('hidden');
+}, 300);
+};
+window.confirmPayment = function() {
+closePaymentModal();
+setTimeout(() => {
+showSuccessModal();
+}, 300);
+};
+window.showSuccessModal = function() {
+const modal = document.getElementById('success-modal');
+if (!modal) return;
+modal.classList.remove('hidden');
+};
+window.closeSuccessModal = function() {
+const modal = document.getElementById('success-modal');
+if (!modal) return;
+modal.classList.add('hidden');
+showHomeScreen();
+};
+});
+</script>
+<script id="qr-generator">
+function generateQRCode() {
+const qrDisplay = document.getElementById('qr-display');
+qrDisplay.classList.remove('hidden');
+}
+</script>
+<script id="filter-controller">
+document.addEventListener('DOMContentLoaded', function() {
+const filterTabs = document.querySelectorAll('.filter-tab');
+filterTabs.forEach(tab => {
+tab.addEventListener('click', function() {
+filterTabs.forEach(t => {
+t.classList.remove('active', 'bg-white', 'text-gray-900');
+t.classList.add('text-gray-600');
+});
+this.classList.add('active', 'bg-white', 'text-gray-900');
+this.classList.remove('text-gray-600');
+});
+});
+});
+</script>
+<script id="payment-method-selector">
+document.addEventListener('DOMContentLoaded', function() {
+const paymentMethods = document.querySelectorAll('.payment-method');
+paymentMethods.forEach(method => {
+method.addEventListener('click', function() {
+paymentMethods.forEach(m => {
+m.classList.remove('bg-primary/5', 'border-primary');
+m.classList.add('bg-white', 'border-gray-200');
+const checkIcon = m.querySelector('.ri-check-line');
+if (checkIcon) {
+checkIcon.style.display = 'none';
+}
+});
+this.classList.remove('bg-white', 'border-gray-200');
+this.classList.add('bg-primary/5', 'border-primary');
+const checkIcon = this.querySelector('.ri-check-line');
+if (checkIcon) {
+checkIcon.style.display = 'block';
+}
+});
+});
+});
+</script>
+</body>
+</html>
